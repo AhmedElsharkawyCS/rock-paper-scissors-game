@@ -9,12 +9,14 @@
     "watch": "tsc -w",
     "build": "tsc",
     "test": "jest --watchAll --no-cache",
-    "test:ci": "jest"
+    "test:ci": "jest",
+    "test:coverage": "jest --coverage"
   },
   "jest": {
     "preset": "ts-jest",
     "testTimeout": 30000,
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "collectCoverage": true
   },
   "keywords": [
     "Node",
