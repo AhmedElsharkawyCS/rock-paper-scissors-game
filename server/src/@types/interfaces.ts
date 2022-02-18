@@ -21,6 +21,7 @@ export interface IGamePlayers {
 export interface IGameRoom {
   roomId: string
   gameInfo: IGamePlayer
+  mode?: RPSGameModeOptions
 }
 
 export interface ISocketPayload {

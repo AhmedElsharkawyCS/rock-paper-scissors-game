@@ -48,7 +48,7 @@ export default class IOGameEvents {
    * determine if the game is played by machine or not
    * @returns boolean
    */
-  private isBot(): boolean {
+  public isBot(): boolean {
     return this.mode === RPSGameModeOptions.COMPUTER_VS_COMPUTER
   }
 
@@ -113,7 +113,7 @@ export default class IOGameEvents {
       ...roomData,
       secondPlayer: { name: playerName, value: "" as any },
     }
-    const gameRome: IGameRoom = { roomId, gameInfo: this.players[roomId] }
+    const gameRome: IGameRoom = { roomId, gameInfo: this.players[roomId], mode: this.mode }
     this._socket.join(roomId)
     // send message to player 2 after joining the game
     this._io.sockets.to(roomId).emit(GameEvents.PLAYER2_JOINED, gameRome)
@@ -129,14 +129,17 @@ export default class IOGameEvents {
    */
   private playerOneResponse(payload: ISocketPayload): void {
     // here we need to check if the creator is machine or real player
-    const { roomId, answer } = payload
+    let { roomId, answer } = payload
     // case one: the game creator is a bot
-    if (this.isBot) {
-      this.players[roomId].creator.value = randomValue(Object.values(RPSGameValuesOptions)) as RPSGameValuesOptions
+    const bot = this.mode === RPSGameModeOptions.COMPUTER_VS_COMPUTER
+    if (bot) {
+      answer = randomValue(Object.values(RPSGameValuesOptions)) as RPSGameValuesOptions
     }
     // case two: the game creator is real player
-    if (Object.values(RPSGameValuesOptions).indexOf(answer) == -1) return this.catchError("Invalid choice value", GameErrorCodes.INVALID_DATA)
+    if (Object.values(RPSGameValuesOptions).indexOf(answer) === -1) return this.catchError("Invalid choice value", GameErrorCodes.INVALID_DATA)
+
     this.players[roomId].creator.value = answer
+
     if (this.players[roomId].secondPlayer.value) this.gameResult(roomId)
   }
   /**
@@ -161,7 +164,7 @@ export default class IOGameEvents {
   private gameResult(roomId: string): void {
     const { creator, secondPlayer } = this.players[roomId]
     const result = this._rpsGame.rpsGameResolver(creator, secondPlayer)
-    this._io.sockets.to(roomId).emit(GameEvents.GAME_RESULT, result)
+    this._io.sockets.to(roomId).emit(GameEvents.GAME_RESULT, { ...result, game: this.players[roomId] })
   }
 
   private catchError(msg: string, code?: GameErrorCodes): void {
