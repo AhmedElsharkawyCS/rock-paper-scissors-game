@@ -1,0 +1,15 @@
+{
+  "name": "package-container",
+  "version": "1.0.0",
+  "description": "just for controlling the scripts",
+  "scripts": {
+    "install:client": "cd client && npm install",
+    "install:server": "cd server && npm install",
+    "start:client": "cd client && npm run start",
+    "start:server": "cd server && npm run start",
+    "start": "concurrently \"npm run start:client\" \"npm run start:server\"",
+    "install:dependencies": "npm run install:client && npm run install:server"
+  },
+  "homepage": "https://github.com/AhmedElsharkawyCS/rock-paper-scissors-game",
+  "license": "ISC"
+}

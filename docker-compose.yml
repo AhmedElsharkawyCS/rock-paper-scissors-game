@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  nodejs-return-payment:
+    container_name: rps-game
+    build: .
+    image: rps-game:v1
+    # maps app ports
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    restart: always
+    networks:
+      - docker-network
+
+networks:
+  docker-network:
+    driver: bridge

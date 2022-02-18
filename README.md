@@ -31,6 +31,7 @@ In the project directory, you can
 
 - Run frontend application => `cd client && npm run start`
 - Run backend application => `cd server && npm run start`
+- You can lunch the application using `Docker` as well by => `docker-compose up --build`
 - Run CLI => `cd server && npm run start:cli`
 
 ## `Test`
@@ -51,6 +52,7 @@ Also you can play RSP game from your browser by doing the next steps:
 
 - Go to `server` directory and run `npm run start`
 - Go to `client` directory and run `npm run start`
+- From project root you can run `docker-compose up --build` <`docker required`>
 - open your browser on <http:localhost:3000>
 
 ### finally `Happy playing...`
@@ -64,6 +66,7 @@ Also you can play RSP game from your browser by doing the next steps:
 - Add more error handling
 - Add more test cases to the frontend
 - Add `eslint` and `prettier` and link theme with `lint-staged`
+- Improve docker file
 
 ## How to play (RPS)
 
