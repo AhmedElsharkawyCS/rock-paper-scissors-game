@@ -25,3 +25,8 @@ export enum GameErrorCodes {
   INVALID_DATA = "Invalid_data",
   INTERNAL_ERROR = "internal_error",
 }
+
+export enum StartGameOption {
+  CREATOR = "creator",
+  JOIN = "join",
+}
