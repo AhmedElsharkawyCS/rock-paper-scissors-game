@@ -17,17 +17,20 @@ interface ResultProps {
 }
 
 export default function Result({ result }: ResultProps) {
-  const [open, setOpen] = React.useState<boolean>(true)
+  const [open, setOpen] = React.useState<boolean>(false)
   const push = useNavigate()
   const handleClose = () => {
     setOpen(false)
   }
+  React.useEffect(() => {
+    setTimeout(() => setOpen(true), 2000)
+  }, [])
 
   return (
     <Dialog disableEscapeKeyDown={true} maxWidth='md' open={open} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
       <DialogTitle id='alert-dialog-title'>{"Game result"}</DialogTitle>
       <DialogContent>
-        <List sx={{ width: "300px", bgcolor: "background.paper" }}>
+        <List sx={{ bgcolor: "background.paper" }}>
           <ListItem>
             <ListItemAvatar>
               <Avatar alt='number' src='https://img.icons8.com/doodle/48/000000/gold-medal.png' />
@@ -38,13 +41,19 @@ export default function Result({ result }: ResultProps) {
             <ListItemAvatar>
               <Avatar alt='number' src='https://img.icons8.com/flat-round/64/000000/arrow--v1.png' />
             </ListItemAvatar>
-            <ListItemText primary={"First Player/Bot Name: " + result.game.creator.name} />
+            <ListItemText
+              primary={"First Player|Bot Name / Player|Bot choice"}
+              secondary={`${result.game.creator.name} / ${result.game.creator.value}`}
+            />
           </ListItem>
           <ListItem>
             <ListItemAvatar>
               <Avatar alt='number' src='https://img.icons8.com/flat-round/64/000000/arrow--v1.png' />
             </ListItemAvatar>
-            <ListItemText primary={"Second Bot name: " + result.game.secondPlayer?.name} />
+            <ListItemText
+              primary={"Second Bot Name / Bot choice"}
+              secondary={`${result.game.secondPlayer?.name} / ${result.game.secondPlayer?.value}`}
+            />
           </ListItem>
         </List>
       </DialogContent>

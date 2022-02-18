@@ -113,7 +113,7 @@ export default class IOGameEvents {
       ...roomData,
       secondPlayer: { name: playerName, value: "" as any },
     }
-    const gameRome: IGameRoom = { roomId, gameInfo: this.players[roomId], mode: this.mode }
+    const gameRome: IGameRoom = { roomId, gameInfo: this.players[roomId] }
     this._socket.join(roomId)
     // send message to player 2 after joining the game
     this._io.sockets.to(roomId).emit(GameEvents.PLAYER2_JOINED, gameRome)

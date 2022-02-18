@@ -3,8 +3,8 @@ import Box from "@mui/material/Box"
 import Stack from "@mui/material/Stack"
 import Grow from "@mui/material/Grow"
 import { Socket } from "socket.io-client"
-import { Button, Text } from "../../../components"
-import { RPSGameValuesOptions, RPSGameModeOptions, GameEvents } from "../../../@types/enums"
+import { Text } from "../../../components"
+import { RPSGameValuesOptions, RPSGameModeOptions, GameEvents, StartGameOption } from "../../../@types/enums"
 import { IGamePlayer, IGameRoom, IPlayerGameResult } from "../../../@types/interfaces"
 import Join from "./Join"
 import Start from "./Start"
@@ -15,17 +15,15 @@ import Share from "./Share"
 interface PlayerProps {
   mode: RPSGameModeOptions
   socket: Socket
-  isJoinPlayer?: boolean
+  startGamePlayerType?: StartGameOption
 }
-enum StartGameOption {
-  CREATOR = "creator",
-  JOIN = "join",
-}
-export default function Player({ mode, socket, isJoinPlayer }: PlayerProps) {
-  const [startType, setStartType] = React.useState<StartGameOption>(isJoinPlayer ? StartGameOption.JOIN : StartGameOption.CREATOR)
+
+export default function Player({ mode, socket, startGamePlayerType }: PlayerProps) {
   const [roomId, setRoomId] = React.useState<string>("")
-  const [isWaitingAnother, setIsWaitingAnother] = React.useState<boolean>(true)
+  const [playerWaiting, setPlayerWaiting] = React.useState<boolean>(true)
   const [gameResult, setGameResult] = React.useState<IPlayerGameResult & { game: IGamePlayer }>()
+  const isCreator = startGamePlayerType === StartGameOption.CREATOR
+  const isBotGame = mode === RPSGameModeOptions.COMPUTER_VS_COMPUTER
 
   const onStart = (playerName: string) => {
     const payload = { playerName, mode }
@@ -40,41 +38,35 @@ export default function Player({ mode, socket, isJoinPlayer }: PlayerProps) {
     //only if the player one is a human
     socket.emit(GameEvents.PLAYER1_ANSWER, payload)
   }
-  const idCreator = StartGameOption.CREATOR === startType
-  const isHuman = idCreator && mode === RPSGameModeOptions.PLAYER_VS_COMPUTER
-  const handleOnPlayerType = () => {
-    if (idCreator) setStartType(StartGameOption.JOIN)
-    else setStartType(StartGameOption.CREATOR)
-  }
 
   const listeners = React.useCallback(() => {
     if (!socket) return
-    if (startType === StartGameOption.CREATOR) {
+    if (isCreator) {
       socket.on(GameEvents.GAME_INITIATED, (payload: IGameRoom) => {
         setRoomId(payload.roomId)
       })
       socket.on(GameEvents.PLAYER2_JOINED, (payload: IGameRoom) => {
-        setIsWaitingAnother(false)
+        // no need to wait sense the player 2 join the game
+        setPlayerWaiting(false)
+        // submit answer for player one in case computer vs computer mode
+        if (mode === RPSGameModeOptions.COMPUTER_VS_COMPUTER) socket.emit(GameEvents.PLAYER1_ANSWER, { roomId: payload.roomId })
       })
     }
-    if (startType === StartGameOption.JOIN) {
-      socket.on(GameEvents.PLAYER2_JOINED, ({ roomId, mode: setupMode }: IGameRoom) => {
-        setRoomId(roomId)
+    if (!isCreator) {
+      socket.on(GameEvents.PLAYER2_JOINED, (payload: IGameRoom) => {
+        setRoomId(payload.roomId)
         // here we will submit answer directly, coz it's a bot (always the
         // second player will be a bot)
-        socket.emit(GameEvents.PLAYER2_ANSWER, { roomId })
-        // submit answer for player one in case computer vs computer mode
-        if (mode == RPSGameModeOptions.COMPUTER_VS_COMPUTER && setupMode === RPSGameModeOptions.COMPUTER_VS_COMPUTER) {
-          socket.emit(GameEvents.PLAYER1_ANSWER, { roomId })
-        }
-        setIsWaitingAnother(false)
+        socket.emit(GameEvents.PLAYER2_ANSWER, { roomId: payload.roomId })
+        // no need to wait sense the player 2 join the game
+        setPlayerWaiting(false)
       })
     }
     // listen on game result
     socket.on(GameEvents.GAME_RESULT, (payload: IPlayerGameResult & { game: IGamePlayer }) => {
       setGameResult(payload)
     })
-  }, [socket, startType])
+  }, [socket, mode, isCreator])
 
   React.useEffect(() => {
     listeners()
@@ -95,21 +87,28 @@ export default function Player({ mode, socket, isJoinPlayer }: PlayerProps) {
         <Stack spacing={2}>
           <Grow in={!roomId} mountOnEnter unmountOnExit timeout={500}>
             <Stack>
-              <Button onClick={handleOnPlayerType} color='info' sx={{ mb: "20px" }}>
-                {idCreator ? "Join Game By Room ID" : "Start New Game"}
-              </Button>
-              {idCreator && <Start onStart={onStart} />}
-              {!idCreator && <Join onJoin={onJoin} />}
+              <Text variant='h6' sx={{ fontWeight: 500, pb: "40px" }}>
+                {isCreator ? "Fill the input to start a new game" : "fill the inputs to join the an existing game"}
+              </Text>
+              {isCreator && <Start onStart={onStart} />}
+              {!isCreator && <Join onJoin={onJoin} />}
             </Stack>
           </Grow>
-          <Grow in={!!roomId && isWaitingAnother} mountOnEnter unmountOnExit timeout={500}>
+          <Grow in={!!roomId && playerWaiting} mountOnEnter unmountOnExit timeout={500}>
             <Stack>
               <Share roomId={roomId} isWaiting={true} />
             </Stack>
           </Grow>
-          <Grow in={!!roomId && !isWaitingAnother} mountOnEnter unmountOnExit timeout={500}>
+          <Grow in={!!roomId && !playerWaiting} mountOnEnter unmountOnExit timeout={500}>
             <Stack>
-              <Answer playerType={isHuman ? "human" : "bot"} onSelect={onSelectAnswer} defaultValue={gameResult?.game.secondPlayer?.value} />
+              {isCreator && (
+                <Answer
+                  playerType={isBotGame ? "bot" : "human"}
+                  onSelect={onSelectAnswer}
+                  defaultValue={(isBotGame && gameResult?.game.creator?.value) || undefined}
+                />
+              )}
+              {!isCreator && <Answer playerType={"bot"} defaultValue={gameResult?.game.secondPlayer?.value} />}
             </Stack>
           </Grow>
           {gameResult && <Result result={gameResult} />}

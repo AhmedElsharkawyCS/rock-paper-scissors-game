@@ -4,12 +4,12 @@ import Stack from "@mui/material/Stack"
 import Grow from "@mui/material/Grow"
 import { useNavigate } from "react-router-dom"
 import { Container, Button, Text } from "../../components"
-import { RPSGameModeOptions } from "../../@types/enums"
+import { RPSGameModeOptions, StartGameOption } from "../../@types/enums"
 
 export default function Home() {
   const navigate = useNavigate()
-  const handleOnClick = (mode: RPSGameModeOptions, isJoin?: boolean) => {
-    navigate(`/rps`, { state: { mode, isJoin } })
+  const handleOnClick = (mode: RPSGameModeOptions, startGamePlayerType: StartGameOption) => {
+    navigate(`/rps`, { state: { mode, startGamePlayerType } })
   }
   return (
     <Grow in={true} mountOnEnter unmountOnExit timeout={1000}>
@@ -22,14 +22,18 @@ export default function Home() {
             Which mode do you need to create?
           </Text>
           <Stack spacing={2} direction='row'>
-            <Button onClick={() => handleOnClick(RPSGameModeOptions.PLAYER_VS_COMPUTER)}> {RPSGameModeOptions.PLAYER_VS_COMPUTER}</Button>
-            <Button onClick={() => handleOnClick(RPSGameModeOptions.COMPUTER_VS_COMPUTER)}>{RPSGameModeOptions.COMPUTER_VS_COMPUTER}</Button>
+            <Button onClick={() => handleOnClick(RPSGameModeOptions.PLAYER_VS_COMPUTER, StartGameOption.CREATOR)}>
+              {RPSGameModeOptions.PLAYER_VS_COMPUTER}
+            </Button>
+            <Button onClick={() => handleOnClick(RPSGameModeOptions.COMPUTER_VS_COMPUTER, StartGameOption.CREATOR)}>
+              {RPSGameModeOptions.COMPUTER_VS_COMPUTER}
+            </Button>
           </Stack>
           <Text variant='h3' sx={{ fontWeight: 300, pb: "10px", pt: "50px" }}>
             Do you need to join active game with room ID?
           </Text>
           <Stack spacing={2} direction='row'>
-            <Button onClick={() => handleOnClick(RPSGameModeOptions.COMPUTER_VS_COMPUTER, true)}> {"Continue"}</Button>
+            <Button onClick={() => handleOnClick(RPSGameModeOptions.COMPUTER_VS_COMPUTER, StartGameOption.JOIN)}> {"Continue"}</Button>
           </Stack>
         </Container>
       </Box>

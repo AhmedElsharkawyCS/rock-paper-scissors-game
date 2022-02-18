@@ -32,7 +32,7 @@ export default function Home() {
           </Grow>
           <Grow in={!isOffline} mountOnEnter unmountOnExit timeout={1000}>
             <Stack>
-              <Player mode={state?.mode} isJoinPlayer={state?.isJoin} socket={socket} />
+              <Player mode={state?.mode} startGamePlayerType={state?.startGamePlayerType} socket={socket} />
             </Stack>
           </Grow>
         </Stack>

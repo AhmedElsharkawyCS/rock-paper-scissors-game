@@ -8,8 +8,8 @@ import { Button, Text } from "../../../components"
 
 interface AnswerProps {
   playerType: "bot" | "human"
-  onSelect: (val: RPSGameValuesOptions) => void
-  defaultValue?: RPSGameValuesOptions
+  onSelect?: (val: RPSGameValuesOptions) => void
+  defaultValue?: RPSGameValuesOptions | undefined
 }
 
 const bounce = keyframes`
@@ -47,12 +47,15 @@ const selectedSx = { border: "2px solid #35ab32", animation: `${bounce} 1s ease`
 
 export default function Answer({ playerType, onSelect, defaultValue }: AnswerProps) {
   const [itemIndex, setItemIndex] = React.useState<number>()
+  const [isSubmitted, setIsSubmitted] = React.useState<boolean>(false)
   const handleOnChoice = (idx: number) => {
     setItemIndex(idx)
+    setIsSubmitted(false)
   }
   const onSubmit = () => {
     if (!itemIndex && itemIndex !== 0) return alert("Please select a valid option first")
-    onSelect(options[itemIndex].value)
+    onSelect?.(options[itemIndex].value)
+    setIsSubmitted(true)
   }
   React.useEffect(() => {
     if (defaultValue && playerType === "bot") {
@@ -63,7 +66,7 @@ export default function Answer({ playerType, onSelect, defaultValue }: AnswerPro
 
   return (
     <Box>
-      <Text sx={{ pb: "20px" }}>{playerType === "human" ? "Select once of these and submit" : "Machine is playing..."}</Text>
+      <Text sx={{ pb: "20px" }}>{playerType === "human" ? "Select once of these and submit" : "Bot is playing..."}</Text>
       <Stack direction='row' spacing={4}>
         {options.map((item, idx) => {
           return (
@@ -79,7 +82,7 @@ export default function Answer({ playerType, onSelect, defaultValue }: AnswerPro
       </Stack>
       {playerType === "human" && (
         <Box sx={{ mt: "30px", display: "flex", justifyContent: "center" }}>
-          <Button color='success' disabled={itemIndex === undefined} onClick={onSubmit}>
+          <Button color='success' disabled={itemIndex === undefined || isSubmitted} onClick={onSubmit}>
             Submit
           </Button>
         </Box>
